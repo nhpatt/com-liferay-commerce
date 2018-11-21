@@ -17,10 +17,12 @@ dependencies {
 	compileOnly group: "com.liferay", name: "com.liferay.portal.apio.api", version: "1.1.0"
 	compileOnly group: "com.liferay", name: "com.liferay.portal.apio.impl", version: "1.0.0"
 	compileOnly group: "com.liferay", name: "com.liferay.site.apio.api", version: "1.0.0"
-	compileOnly group: "com.liferay", name: "com.liferay.site.apio.impl", version: "1.0.0"
 }
 
 deployDependencies {
 	from configurations.compileOnly
-	include "com.liferay.person.apio.api-*.jar", "com.liferay.portal.apio.*.jar", "com.liferay.site.apio.*.jar", "com.liferay.folder.apio.*.jar"
+	include "com.liferay.person.apio.*.jar",
+			"com.liferay.portal.apio.*.jar",
+			"com.liferay.site.apio.*.jar",
+			"com.liferay.folder.apio.*.jar"
 }
