@@ -25,6 +25,7 @@ import com.liferay.apio.architect.routes.NestedCollectionRoutes;
 import com.liferay.commerce.data.integration.apio.identifier.ClassPKExternalReferenceCode;
 import com.liferay.commerce.data.integration.apio.identifier.CommerceOrderIdentifier;
 import com.liferay.commerce.data.integration.apio.identifier.CommerceOrderNoteIdentifier;
+import com.liferay.commerce.data.integration.apio.identifier.CommerceUserIdentifier;
 import com.liferay.commerce.data.integration.apio.internal.form.CommerceOrderNoteUpserterForm;
 import com.liferay.commerce.data.integration.apio.internal.util.CommerceOrderHelper;
 import com.liferay.commerce.data.integration.apio.internal.util.CommerceOrderNoteHelper;
@@ -34,6 +35,7 @@ import com.liferay.commerce.service.CommerceOrderNoteService;
 import com.liferay.person.apio.architect.identifier.PersonIdentifier;
 import com.liferay.portal.apio.permission.HasPermission;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.site.apio.architect.identifier.WebSiteIdentifier;
 
 import java.util.List;
@@ -121,7 +123,12 @@ public class CommerceOrderNoteNestedCollectionResource
 		).addDate(
 			"dateModified", CommerceOrderNote::getModifiedDate
 		).addLinkedModel(
-			"author", PersonIdentifier.class, CommerceOrderNote::getUserId
+			"author", CommerceUserIdentifier.class, commerceOrderNote -> {
+				User orderUser = commerceOrderNote.getUser();
+				return ClassPKExternalReferenceCode.create(
+					orderUser.getUserId(),
+					orderUser.getExternalReferenceCode());
+			}
 		).build();
 	}
 

@@ -20,11 +20,15 @@ import com.liferay.apio.architect.representor.Representor;
 import com.liferay.apio.architect.resource.NestedCollectionResource;
 import com.liferay.apio.architect.routes.ItemRoutes;
 import com.liferay.apio.architect.routes.NestedCollectionRoutes;
+import com.liferay.commerce.data.integration.apio.identifier.ClassPKExternalReferenceCode;
 import com.liferay.commerce.data.integration.apio.identifier.CommercePaymentMethodIdentifier;
+import com.liferay.commerce.data.integration.apio.identifier.CommerceUserIdentifier;
 import com.liferay.commerce.model.CommercePaymentMethod;
 import com.liferay.commerce.service.CommercePaymentMethodService;
 import com.liferay.person.apio.architect.identifier.PersonIdentifier;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.service.UserService;
 import com.liferay.site.apio.architect.identifier.WebSiteIdentifier;
 
 import java.util.List;
@@ -88,9 +92,25 @@ public class CommercePaymentMethodNestedCollectionResource
 		).addDate(
 			"dateModified", CommercePaymentMethod::getModifiedDate
 		).addLinkedModel(
-			"author", PersonIdentifier.class, CommercePaymentMethod::getUserId
+			"author", CommerceUserIdentifier.class, commercePaymentMethod ->
+			{
+				try {
+					User user =
+						_userService.getUserById(commercePaymentMethod.getUserId());
+					return ClassPKExternalReferenceCode.create(
+						user.getUserId(),
+						user.getExternalReferenceCode());
+				}
+				catch (PortalException e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
 		).build();
 	}
+
+	@Reference
+	private UserService _userService;
 
 	private CommercePaymentMethod _getCommercePaymentMethod(
 			Long commercePaymentMethodId)

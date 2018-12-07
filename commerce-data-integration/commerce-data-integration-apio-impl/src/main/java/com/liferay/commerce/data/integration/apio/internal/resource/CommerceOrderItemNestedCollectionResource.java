@@ -24,6 +24,7 @@ import com.liferay.commerce.data.integration.apio.identifier.CPInstanceIdentifie
 import com.liferay.commerce.data.integration.apio.identifier.ClassPKExternalReferenceCode;
 import com.liferay.commerce.data.integration.apio.identifier.CommerceOrderIdentifier;
 import com.liferay.commerce.data.integration.apio.identifier.CommerceOrderItemIdentifier;
+import com.liferay.commerce.data.integration.apio.identifier.CommerceUserIdentifier;
 import com.liferay.commerce.data.integration.apio.internal.util.CPInstanceHelper;
 import com.liferay.commerce.data.integration.apio.internal.util.CommerceOrderHelper;
 import com.liferay.commerce.data.integration.apio.internal.util.CommerceOrderItemHelper;
@@ -38,6 +39,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 
 import java.util.List;
 
+import com.liferay.portal.kernel.model.User;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -136,7 +138,18 @@ public class CommerceOrderItemNestedCollectionResource
 		).addDate(
 			"dateModified", CommerceOrderItem::getModifiedDate
 		).addLinkedModel(
-			"author", PersonIdentifier.class, CommerceOrderItem::getUserId
+			"author", CommerceUserIdentifier.class, commerceOrderItem -> {
+				try {
+					CommerceOrder commerceOrder = commerceOrderItem.getCommerceOrder();
+					User orderUser =
+						commerceOrder.getOrderUser();
+					return ClassPKExternalReferenceCode.create(orderUser.getUserId(), orderUser.getExternalReferenceCode());
+				}
+				catch (PortalException e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
 		).addNumber(
 			"commerceOrderId", CommerceOrderItem::getCommerceOrderId
 		).addString(

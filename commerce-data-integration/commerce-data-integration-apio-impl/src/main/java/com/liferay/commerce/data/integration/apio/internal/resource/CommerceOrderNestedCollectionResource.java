@@ -27,15 +27,16 @@ import com.liferay.commerce.data.integration.apio.identifier.CommerceAccountIden
 import com.liferay.commerce.data.integration.apio.identifier.CommerceAddressIdentifier;
 import com.liferay.commerce.data.integration.apio.identifier.CommerceOrderIdentifier;
 import com.liferay.commerce.data.integration.apio.identifier.CommercePaymentMethodIdentifier;
+import com.liferay.commerce.data.integration.apio.identifier.CommerceUserIdentifier;
 import com.liferay.commerce.data.integration.apio.internal.form.CommerceOrderUpdaterForm;
 import com.liferay.commerce.data.integration.apio.internal.form.CommerceOrderUpserterForm;
 import com.liferay.commerce.data.integration.apio.internal.util.CommerceAccountHelper;
 import com.liferay.commerce.data.integration.apio.internal.util.CommerceOrderHelper;
+import com.liferay.commerce.data.integration.apio.internal.util.CommerceUserHelper;
 import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.organization.constants.CommerceOrganizationConstants;
 import com.liferay.commerce.organization.service.CommerceOrganizationService;
 import com.liferay.commerce.service.CommerceOrderService;
-import com.liferay.person.apio.architect.identifier.PersonIdentifier;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.apio.permission.HasPermission;
 import com.liferay.portal.apio.user.CurrentUser;
@@ -148,7 +149,18 @@ public class CommerceOrderNestedCollectionResource
 		).addDate(
 			"dateModified", CommerceOrder::getModifiedDate
 		).addLinkedModel(
-			"author", PersonIdentifier.class, CommerceOrder::getUserId
+			"author", CommerceUserIdentifier.class, commerceOrder -> {
+				try {
+					User orderUser = commerceOrder.getOrderUser();
+					return ClassPKExternalReferenceCode.create(
+						orderUser.getUserId(),
+						orderUser.getExternalReferenceCode());
+				}
+				catch (PortalException e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
 		).addString(
 			"authorExternalReferenceCode", this::_getUserExternalReferenceCode
 		).addLinkedModel(

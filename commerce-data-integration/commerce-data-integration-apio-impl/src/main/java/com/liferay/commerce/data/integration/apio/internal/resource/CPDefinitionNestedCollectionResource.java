@@ -24,6 +24,7 @@ import com.liferay.apio.architect.routes.ItemRoutes;
 import com.liferay.apio.architect.routes.NestedCollectionRoutes;
 import com.liferay.commerce.data.integration.apio.identifier.CPDefinitionIdentifier;
 import com.liferay.commerce.data.integration.apio.identifier.ClassPKExternalReferenceCode;
+import com.liferay.commerce.data.integration.apio.identifier.CommerceUserIdentifier;
 import com.liferay.commerce.data.integration.apio.internal.form.CPDefinitionUpserterForm;
 import com.liferay.commerce.data.integration.apio.internal.util.CPDefinitionHelper;
 import com.liferay.commerce.product.exception.CPDefinitionProductTypeNameException;
@@ -33,6 +34,8 @@ import com.liferay.commerce.product.service.CPInstanceLocalService;
 import com.liferay.person.apio.architect.identifier.PersonIdentifier;
 import com.liferay.portal.apio.permission.HasPermission;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.service.UserService;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.site.apio.architect.identifier.WebSiteIdentifier;
@@ -109,7 +112,19 @@ public class CPDefinitionNestedCollectionResource
 		).addDate(
 			"dateModified", CPDefinition::getModifiedDate
 		).addLinkedModel(
-			"author", PersonIdentifier.class, CPDefinition::getUserId
+			"author", CommerceUserIdentifier.class, cpDefinition -> {
+				try {
+					User user =
+						_userService.getUserById(cpDefinition.getUserId());
+					return ClassPKExternalReferenceCode.create(
+						user.getUserId(),
+						user.getExternalReferenceCode());
+				}
+				catch (PortalException e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
 		).addString(
 			"description", CPDefinition::getDescription
 		).addString(
@@ -122,6 +137,9 @@ public class CPDefinitionNestedCollectionResource
 			"skus", this::_getSKUs
 		).build();
 	}
+
+	@Reference
+	private UserService _userService;
 
 	private PageItems<CPDefinition> _getPageItems(
 			Pagination pagination, Long webSiteId)
